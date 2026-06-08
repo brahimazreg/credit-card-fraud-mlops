@@ -1,170 +1,175 @@
-# Credit Card Fraud Detection API
+# 💳 Credit Card Fraud Detection - End-to-End MLOps Project
 
 ## Overview
 
-This project implements an end-to-end machine learning pipeline for detecting fraudulent credit card transactions. The workflow includes data exploration, preprocessing, model training, model persistence, and deployment through a FastAPI REST API.
+This project implements an end-to-end Machine Learning and MLOps pipeline for detecting fraudulent credit card transactions.
 
-The objective is to identify potentially fraudulent transactions while minimizing false positives.
+The solution includes:
+
+* XGBoost fraud detection model
+* FastAPI REST API
+* Docker containerization
+* Deployment on Render
+* Prometheus monitoring
+* GitHub Actions CI
+* Automated testing with Pytest
+
+The goal is not only to build a machine learning model, but also to deploy, monitor, and maintain it following MLOps best practices.
 
 ---
 
-## Project Structure
+## 🚀 Live Application
+
+| Service      | URL                                                     |
+| ------------ | ------------------------------------------------------- |
+| API          | https://credit-card-fraud-api-tfga.onrender.com/        |
+| Swagger Docs | https://credit-card-fraud-api-tfga.onrender.com/docs    |
+| Health Check | https://credit-card-fraud-api-tfga.onrender.com/health  |
+| Metrics      | https://credit-card-fraud-api-tfga.onrender.com/metrics |
+
+---
+
+## 🏗️ Architecture
+
+```text
+Client
+   │
+   ▼
+FastAPI API
+   │
+   ▼
+XGBoost Model
+   │
+   ▼
+Prediction Response
+
+Monitoring
+   │
+   └── Prometheus Metrics
+
+CI Pipeline
+   │
+   └── GitHub Actions
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### Machine Learning
+
+* Python
+* Pandas
+* NumPy
+* Scikit-Learn
+* XGBoost
+
+### API Development
+
+* FastAPI
+* Pydantic
+* Uvicorn
+
+### MLOps
+
+* Docker
+* Render
+* Prometheus
+* GitHub Actions
+* Pytest
+
+---
+
+## 📂 Project Structure
 
 ```text
 credit-card-fraud-mlops/
 │
-├── README.md
-├── requirements.txt
-├── main.py
-│
+├── .github/workflows/ci.yml
 ├── data/
-│   └── raw/
-│       └── creditcard.csv
-│
 ├── models/
-│   ├── xgboost_model.pkl
-│   ├── scaler.pkl
-│   └── threshold.pkl
-│
 ├── notebooks/
-│   ├── 01_eda.ipynb
-│   └── 02_preprocessing.ipynb
-│
-└── src/
-    ├── __init__.py
-    ├── train.py
-    └── predict.py
+├── src/
+│   ├── train.py
+│   └── predict.py
+├── tests/
+├── main.py
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## Dataset
+## ✨ Features
 
-The project uses the Credit Card Fraud Detection dataset.
+### Machine Learning
 
-Features:
+* Fraud detection using XGBoost
+* Feature preprocessing and scaling
+* Probability-based predictions
 
-* `Time`
-* `Amount`
-* `V1` to `V28` (PCA-transformed features)
+### API
 
-Target:
+* RESTful prediction endpoint
+* Input validation using Pydantic
+* Interactive Swagger documentation
 
-* `Class = 0` → Legitimate transaction
-* `Class = 1` → Fraudulent transaction
+### Monitoring
 
-The dataset is highly imbalanced, with fraudulent transactions representing a very small percentage of all transactions.
+* Request metrics
+* Response latency
+* Memory usage
+* CPU usage
+* Custom ML metrics:
 
----
+  * predictions_total
+  * fraud_predictions_total
 
-## Data Preprocessing
+### Testing & CI
 
-The preprocessing pipeline includes:
-
-* Train/Test split using stratification
-* Standardization of the `Amount` feature using `StandardScaler`
-* Handling class imbalance using SMOTE
-* Feature preparation for model training
-
----
-
-## Models Evaluated
-
-### Logistic Regression
-
-* Baseline model
-* Trained on SMOTE-balanced data
-
-### Random Forest
-
-* Ensemble tree-based model
-* Evaluated as an alternative to Logistic Regression
-
-### XGBoost
-
-* Gradient boosting model
-* Best performing model
-* Uses `scale_pos_weight` to address class imbalance
-* Custom classification threshold applied
+* Unit testing with Pytest
+* Coverage reporting
+* Automated CI pipeline using GitHub Actions
 
 ---
 
-## Model Artifacts
-
-The following artifacts are generated after training:
-
-| File                | Description                              |
-| ------------------- | ---------------------------------------- |
-| `xgboost_model.pkl` | Trained XGBoost model                    |
-| `scaler.pkl`        | StandardScaler used for Amount           |
-| `threshold.pkl`     | Decision threshold used during inference |
-
----
-
-## API Deployment
-
-The model is served through a FastAPI application.
-
-### Start the API
-
-```bash
-uvicorn main:app --reload
-```
-
-The API will be available at:
-
-```text
-http://127.0.0.1:8000
-```
-
-Interactive documentation:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## Prediction Endpoint
+## 📊 Example Prediction
 
 ### Request
-
-**POST** `/predict`
-
-Example:
 
 ```json
 {
   "Time": 0,
-  "V1": -1.359807,
-  "V2": -0.072781,
-  "V3": 2.536347,
-  "V4": 1.378155,
-  "V5": -0.338321,
-  "V6": 0.462388,
-  "V7": 0.239599,
-  "V8": 0.098698,
-  "V9": 0.363787,
-  "V10": 0.090794,
-  "V11": -0.5516,
-  "V12": -0.617801,
-  "V13": -0.99139,
-  "V14": -0.311169,
-  "V15": 1.468177,
-  "V16": -0.470401,
-  "V17": 0.207971,
-  "V18": 0.025791,
-  "V19": 0.403993,
-  "V20": 0.251412,
-  "V21": -0.018307,
-  "V22": 0.277838,
-  "V23": -0.110474,
-  "V24": 0.066928,
-  "V25": 0.128539,
-  "V26": -0.189115,
-  "V27": 0.133558,
-  "V28": -0.021053,
-  "Amount": 149.62
+  "V1": 1,
+  "V2": 1,
+  "V3": 1,
+  "V4": 1,
+  "V5": 1,
+  "V6": 1,
+  "V7": 1,
+  "V8": 1,
+  "V9": 1,
+  "V10": 1,
+  "V11": 1,
+  "V12": 1,
+  "V13": 1,
+  "V14": 1,
+  "V15": 1,
+  "V16": 1,
+  "V17": 1,
+  "V18": 1,
+  "V19": 1,
+  "V20": 1,
+  "V21": 1,
+  "V22": 1,
+  "V23": 1,
+  "V24": 1,
+  "V25": 1,
+  "V26": 1,
+  "V27": 1,
+  "V28": 1,
+  "Amount": 100
 }
 ```
 
@@ -172,83 +177,110 @@ Example:
 
 ```json
 {
-  "fraud_probability": 0.00019,
+  "fraud_probability": 0.000182,
   "prediction": 0
 }
 ```
 
-Where:
-
-* `prediction = 0` → Legitimate transaction
-* `prediction = 1` → Fraudulent transaction
-
 ---
 
-## Installation
+## 🧪 Running Locally
 
-Clone the repository:
+### Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone <your-repository-url>
 cd credit-card-fraud-mlops
 ```
 
-Create a virtual environment:
+### Create virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-Activate the environment:
+### Activate environment
 
-### Windows
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-### Linux / macOS
+Linux / Mac:
 
 ```bash
 source venv/bin/activate
 ```
 
-Install dependencies:
+### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### Start the API
 
-## Technologies Used
+```bash
+uvicorn main:app --reload
+```
 
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* Imbalanced-Learn (SMOTE)
-* XGBoost
-* FastAPI
-* Uvicorn
-* Joblib
-* Jupyter Notebook
+Open:
+
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-## Future Improvements
+## 🔍 Monitoring
 
-* Docker containerization
-* Automated testing
-* CI/CD pipeline
-* MLflow experiment tracking
-* Model monitoring
-* Cloud deployment
+Prometheus metrics are available at:
+
+```text
+/metrics
+```
+
+Example custom metrics:
+
+```text
+predictions_total 6
+fraud_predictions_total 0
+```
+
+These metrics provide visibility into model usage and fraud detection activity in production.
 
 ---
 
-## Author
+## ✅ Continuous Integration
 
-Brahim AZREG
+GitHub Actions automatically runs:
 
-Machine Learning & MLOps Portfolio Project
+* Dependency installation
+* Unit tests
+* Validation on every push to main
+
+Workflow:
+
+```text
+.github/workflows/ci.yml
+```
+
+---
+
+## 🎯 MLOps Capabilities
+
+* Model Serving with FastAPI
+* Containerization with Docker
+* Cloud Deployment on Render
+* Monitoring with Prometheus
+* Automated Testing with Pytest
+* CI Pipeline with GitHub Actions
+
+---
+
+## 👨‍💻 Author
+
+**Brahim Azreg**
+
+Machine Learning • Data Science • MLOps
