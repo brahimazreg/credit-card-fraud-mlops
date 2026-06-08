@@ -51,3 +51,12 @@ def predict(data: Transaction):
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+@app.get("/")
+def root():
+    return {
+        "name": "Credit Card Fraud Detection API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
