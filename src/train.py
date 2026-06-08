@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -5,11 +6,17 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+import mlflow
+import mlflow.xgboost
+
+
 
 # Read the file 
-df=pd.read_csv(r"C:\Users\brahi\Desktop\credit-card-fraud-mlops\data\raw\creditcard.csv")
+#df=pd.read_csv(r"C:\Users\brahi\Desktop\credit-card-fraud-mlops\data\raw\creditcard.csv")
+df = pd.read_csv("data/raw/creditcard.csv")
 
 # we use stratify in order to have both x_train and x_test with the smae percentage of fraud
+
 x=df.drop('Class',axis=1)
 y=df['Class']
 x_train,x_test,y_train,y_test=train_test_split(x,y,stratify=y,test_size=0.2,random_state=42)
@@ -64,7 +71,7 @@ print(classification_report(y_test, y_pred_rfc))
 #### --------------           XGBoost  -------------------
 
 from xgboost import XGBClassifier
-
+mlflow.set_experiment("Credit Card Fraud Detection")
 model = XGBClassifier(
     n_estimators=200,
     max_depth=6,
@@ -78,30 +85,65 @@ y_pred_xgb = model.predict(x_test)
 print(classification_report(y_test, y_pred_xgb))
 
 # using  scale_pos_weight
-model = XGBClassifier(
-    n_estimators=300,
-    max_depth=6,
-    learning_rate=0.05,
-    scale_pos_weight=100
-)
+with mlflow.start_run(run_name="xgboost_v1"):
 
-model.fit(x_train, y_train)
+    model = XGBClassifier(
+        n_estimators=300,
+        max_depth=6,
+        learning_rate=0.05,
+        scale_pos_weight=100,
+        random_state=42
+    )
 
-# Changing the threshold  from 0.5 to 0.3
-y_proba = model.predict_proba(x_test)[:, 1]
-y_pred_th = (y_proba > 0.3).astype(int)
+    model.fit(x_train, y_train)
 
-print(classification_report(y_test, y_pred_th))
+    y_proba = model.predict_proba(x_test)[:, 1]
+    y_pred_th = (y_proba > 0.3).astype(int)
 
-from sklearn.metrics import confusion_matrix
-print(confusion_matrix(y_test, y_pred))
+    report = classification_report(
+        y_test,
+        y_pred_th,
+        output_dict=True
+    )
 
-# Save the model 
-import joblib
-joblib.dump(model, "xgboost_model.pkl")
+    roc_auc = roc_auc_score(y_test, y_proba)
 
-# Save threshold
-joblib.dump(0.3, "threshold.pkl")
+    mlflow.log_param("n_estimators", 300)
+    mlflow.log_param("max_depth", 6)
+    mlflow.log_param("learning_rate", 0.05)
+    mlflow.log_param("scale_pos_weight", 100)
+    mlflow.log_param("threshold", 0.3)
 
-# save scalar
-joblib.dump(scaler, "scaler.pkl")
+    mlflow.log_metric("roc_auc", roc_auc)
+    mlflow.log_metric(
+        "fraud_precision",
+        report["1"]["precision"]
+    )
+    mlflow.log_metric(
+        "fraud_recall",
+        report["1"]["recall"]
+    )
+    mlflow.log_metric(
+        "fraud_f1",
+        report["1"]["f1-score"]
+    )
+
+    mlflow.xgboost.log_model(
+        model,
+        artifact_path="model"
+    )
+
+    joblib.dump(
+        model,
+        "models/xgboost_model.pkl"
+    )
+
+    joblib.dump(
+        0.3,
+        "models/threshold.pkl"
+    )
+
+    joblib.dump(
+        scaler,
+        "models/scaler.pkl"
+    )
